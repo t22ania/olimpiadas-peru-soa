@@ -1,0 +1,163 @@
+# Plataforma de Gestión de Olimpiadas "Olimpiadas PERÚ"
+
+Proyecto desarrollado para el curso de Arquitectura de Software. Consiste en una
+plataforma web para administrar olimpiadas deportivas institucionales, desde el
+registro de las instituciones participantes hasta el control de resultados,
+estadísticas e incidencias. El sistema contempla cuatro disciplinas: fútbol,
+básquet, vóley y ping pong.
+
+## 1. Descripción general
+
+El sistema fue diseñado siguiendo el enfoque de Arquitectura Orientada a Servicios
+(SOA). En lugar de construir una única aplicación monolítica, la solución se divide
+en servicios independientes que se comunican entre sí mediante interfaces REST. Cada
+servicio tiene una responsabilidad clara y puede ejecutarse o mantenerse por separado,
+lo que facilita la escalabilidad y el mantenimiento del conjunto.
+
+La justificación de este enfoque se resume en tres puntos:
+
+- El servicio de autenticación puede modificarse sin afectar al registro de resultados.
+- Cada servicio se despliega de forma independiente y puede crecer según la demanda.
+- La seguridad se centraliza en un único servicio que emite y valida los tokens de acceso.
+
+## 2. Componentes del sistema
+
+| Componente | Función | Tecnología | Puerto |
+|---|---|---|---|
+| frontend | Interfaz web que utiliza el usuario | React + Vite | 5173 |
+| servicio-login | Autenticación y emisión de tokens JWT | Express + JWT + bcrypt | 4001 |
+| servicio-registro | Registro de usuarios e instituciones | Express + bcrypt | 4002 |
+| sistema-web-completo | API principal, migraciones y datos | Express + Knex + PostgreSQL | 4000 |
+| PostgreSQL | Base de datos compartida | Docker (postgres:16) | 5432 |
+
+## 3. Requisitos previos
+
+Antes de ejecutar el proyecto es necesario contar con lo siguiente instalado en el equipo:
+
+- Node.js (versión 18 o superior).
+- Docker Desktop, únicamente si se desea probar la versión completa con base de datos.
+
+Este paquete se entrega sin la carpeta `node_modules`, por lo que la primera vez debe
+ejecutarse `npm install` dentro de cada carpeta para descargar las dependencias.
+
+## 4. Instalación y ejecución
+
+Existen dos formas de ejecutar el sistema, según lo que se quiera revisar.
+
+### 4.1. Ejecución rápida (solo interfaz)
+
+El frontend puede ejecutarse de manera autónoma con datos de demostración, sin
+necesidad de base de datos ni de los demás servicios. Es la opción recomendada para
+revisar las pantallas y el flujo de la aplicación.
+
+1. Abrir una terminal dentro de la carpeta `frontend`.
+2. Ejecutar la instalación de dependencias:
+
+   ```
+   npm install
+   ```
+
+3. Iniciar la aplicación:
+
+   ```
+   npm run dev
+   ```
+
+4. Abrir en el navegador la dirección `http://localhost:5173`.
+
+### 4.2. Ejecución completa (arquitectura SOA con base de datos)
+
+Esta modalidad levanta la base de datos y los cuatro servicios. Requiere Docker Desktop.
+
+1. Desde la carpeta raíz del proyecto, iniciar la base de datos:
+
+   ```
+   docker compose up -d
+   ```
+
+2. Preparar la API principal (crea las tablas, carga los datos y la deja en ejecución):
+
+   ```
+   cd sistema-web-completo
+   npm install
+   npm run db:reset
+   npm run dev
+   ```
+
+3. En otra terminal, iniciar el servicio de login:
+
+   ```
+   cd servicio-login
+   npm install
+   npm run dev
+   ```
+
+4. En otra terminal, iniciar el servicio de registro:
+
+   ```
+   cd servicio-registro
+   npm install
+   npm run dev
+   ```
+
+5. En otra terminal, iniciar el frontend:
+
+   ```
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+6. Ingresar a `http://localhost:5173`.
+
+En sistemas Windows, una vez instaladas las dependencias en cada carpeta, puede usarse
+el archivo `iniciar-todo.bat` para levantar los cuatro servicios de una sola vez. La
+base de datos debe estar en ejecución antes de usarlo.
+
+## 5. Usuarios de prueba
+
+La aplicación incluye cuatro cuentas, una por cada rol. La contraseña para todas es `123456`.
+
+| Rol | Correo | Alcance |
+|---|---|---|
+| Administrador | admin@demo.com | Acceso a todas las vistas, incluida la de reportes |
+| Coordinador | coordinador@demo.com | Sorteo, resultados, incidencias y tabla de posiciones |
+| Árbitro | arbitro@demo.com | Registro de resultados e incidencias |
+| Institución | institucion@demo.com | Registro, inscripción de equipos y tabla de posiciones |
+
+Cada rol visualiza únicamente el menú correspondiente a sus permisos. Si un usuario
+intenta ingresar a una vista que no le corresponde, el sistema lo redirige de forma
+automática a una de sus vistas permitidas.
+
+## 6. Funcionalidades principales
+
+- Registro de instituciones, con asignación automática del país representado según el grado.
+- Inscripción de equipos y jugadores, con validación del número mínimo de participantes por deporte.
+- Sorteo de series y generación del calendario de partidos.
+- Registro y publicación de resultados.
+- Tabla de posiciones y ranking de anotadores, recalculados a partir de los resultados publicados.
+- Gestión de incidencias, con clasificación por tipo, tiempo límite de atención (SLA) y seguimiento del estado.
+- Vista de reportes para el administrador, con totales del evento y ranking general de anotadores.
+- Página de documentación con el diccionario de datos de las entidades del sistema.
+
+## 7. Reglas de negocio consideradas
+
+- Número mínimo de jugadores por equipo: fútbol 11, básquet 5, vóley 6 y ping pong entre 1 y 2.
+- El sorteo es aleatorio pero reproducible: se conserva la semilla y el registro de cada paso.
+- Puntuación de fútbol: victoria 3 puntos, empate 1 punto y derrota 0 puntos.
+- Tiempo límite de atención de incidencias según su tipo: técnica menos de 2 horas,
+  deportiva menos de 24 horas, administrativa menos de 48 horas y disciplinaria menos de 72 horas.
+
+## 8. Modelo de datos
+
+La base de datos está compuesta por trece tablas: institución, usuario, evento,
+deporte, equipo, participante, serie, partido, resultado, estadística, incidencia,
+notificación y sorteo. Las definiciones se encuentran en
+`sistema-web-completo/migrations/` y los datos iniciales en `sistema-web-completo/seeds/`.
+
+## 9. Consideraciones
+
+Se trata de un producto mínimo viable con fines académicos. El envío real de correos
+electrónicos no se encuentra implementado; en su lugar, las notificaciones se registran
+en la base de datos. Las nuevas pantallas de incidencias y reportes trabajan con el
+estado en memoria del frontend, sin persistencia en la base de datos.

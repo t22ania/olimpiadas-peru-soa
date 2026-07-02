@@ -1,0 +1,34 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: olimpiadas_pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: olimpiadas
+      POSTGRES_PASSWORD: olimpiadas123
+      POSTGRES_DB: olimpiadas
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U olimpiadas -d olimpiadas"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # PgAdmin opcional para inspeccionar la base (http://localhost:8080)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: olimpiadas_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@demo.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata:
