@@ -129,14 +129,14 @@ base de datos debe estar en ejecución antes de usarlo.
 ## 5. Usuarios de acceso
 
 El sistema se entrega con cuatro cuentas iniciales de demostración, una por cada rol.
-La contraseña inicial para todas es `123456`.
+**La contraseña de todas las cuentas es `123456`.**
 
-| Rol | Correo | Alcance |
-|---|---|---|
-| Administrador | admin@demo.com | Acceso a todas las vistas, incluidas reportes y gestión de usuarios |
-| Coordinador | coordinador@demo.com | Sorteo, resultados, incidencias y tabla de posiciones |
-| Árbitro | arbitro@demo.com | Registro de resultados e incidencias |
-| Institución | institucion@demo.com | Registro, inscripción de equipos y tabla de posiciones |
+| Rol | Correo | Contraseña | Alcance |
+|---|---|---|---|
+| Administrador | admin@demo.com | `123456` | Acceso a todas las vistas, incluidas reportes y gestión de usuarios |
+| Coordinador | coordinador@demo.com | `123456` | Sorteo, resultados, incidencias y tabla de posiciones |
+| Árbitro | arbitro@demo.com | `123456` | Registro de resultados e incidencias |
+| Institución | institucion@demo.com | `123456` | Registro, inscripción de equipos y tabla de posiciones |
 
 > **Importante (seguridad):** estas son credenciales de demostración públicas y
 > son **idénticas en cualquier equipo** donde se instale el proyecto, porque se
