@@ -6,6 +6,18 @@ registro de las instituciones participantes hasta el control de resultados,
 estadísticas e incidencias. El sistema contempla cuatro disciplinas: fútbol,
 básquet, vóley y ping pong.
 
+## Enlaces del proyecto
+
+| Recurso | Dirección |
+|---|---|
+| Aplicación publicada | https://t22ania.github.io/olimpiadas-peru-soa/ |
+| Código fuente | https://github.com/t22ania/olimpiadas-peru-soa |
+
+La aplicación publicada funciona en modo demostración: como GitHub Pages solo
+admite sitios estáticos, el frontend se ejecuta con los datos de ejemplo cargados
+en memoria, sin base de datos. Para revisar la arquitectura completa con los tres
+servicios y PostgreSQL debe seguirse el punto 4.2 de este documento.
+
 ## 1. Descripción general
 
 El sistema fue diseñado siguiendo el enfoque de Arquitectura Orientada a Servicios
