@@ -1,5 +1,9 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import { GRADOS, PAIS_POR_GRADO, incidencias as incidenciasSeed, ESTADOS_INCIDENCIA } from '../data/seed.js'
+import {
+  demoDeportes, demoInstituciones, demoEquipos, demoPartidos,
+  demoParticipantes, demoPosiciones, demoRanking, demoSorteo
+} from '../data/demo.js'
 import * as api from '../api.js'
 
 const DataContext = createContext(null)
@@ -45,6 +49,10 @@ export function DataProvider ({ children }) {
   const [eventoId, setEventoId] = useState(null)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(null)
+  // Modo demostración: se activa cuando la API (:4000) no responde
+  const [modoDemo, setModoDemo] = useState(false)
+  // Participantes de los equipos creados durante la sesión en modo demostración
+  const participantesDemo = useRef({})
   // Incidencias: se mantienen solo en memoria (sin backend)
   const [incidencias, setIncidencias] = useState(incidenciasSeed)
 
@@ -71,8 +79,17 @@ export function DataProvider ({ children }) {
       setEquipos(eq.map(mapEquipo))
       setPartidos(par.map(mapPartido))
       setEventoId(eventos[0]?.id ?? null)
+      setModoDemo(false)
     } catch (e) {
-      setError('No se pudo conectar con la API (:4000). ¿Están corriendo los servicios y PostgreSQL?')
+      // Sin servicios activos la aplicación no se detiene: continúa con los datos
+      // de demostración cargados en memoria (mismo formato que devuelve la API).
+      setDeportes(demoDeportes())
+      setInstituciones(demoInstituciones())
+      setEquipos(demoEquipos())
+      setPartidos(demoPartidos())
+      setEventoId('demo')
+      setModoDemo(true)
+      setError(null)
     } finally {
       setCargando(false)
     }
@@ -84,6 +101,11 @@ export function DataProvider ({ children }) {
 
   // Institución: usa el microservicio de registro (:4002) y refresca desde (:4000)
   const agregarInstitucion = async ({ nombre, contacto, grado }) => {
+    if (modoDemo) {
+      const nueva = { id: Date.now(), nombre, contacto, grado, pais: PAIS_POR_GRADO[grado] }
+      setInstituciones(prev => [...prev, nueva])
+      return { nombre: nueva.nombre, pais: nueva.pais, grado: nueva.grado }
+    }
     const inst = await api.registrarInstitucionRemoto({ nombre, contacto, grado })
     await recargarInstituciones()
     return { nombre: inst.nombre, pais: inst.pais_representado, grado: inst.grado }
@@ -91,6 +113,30 @@ export function DataProvider ({ children }) {
 
   // Equipo completo: crea equipo, agrega participantes y valida/habilita
   const inscribirEquipo = async ({ deporte_id, nombre, institucion_id, participantes }) => {
+    if (modoDemo) {
+      const dep = deportes.find(d => d.id === deporte_id)
+      const minimo = dep?.min ?? 1
+      const habilitado = participantes.length >= minimo
+      const id = Date.now()
+      participantesDemo.current[id] = participantes.map((p, i) => ({
+        id: id + i + 1, nombre: p.nombre, posicion: null
+      }))
+      const nuevo = {
+        id,
+        deporte_id,
+        nombre,
+        estado: habilitado ? 'habilitado' : 'pendiente',
+        institucion_id,
+        institucion_nombre: instituciones.find(i => i.id === institucion_id)?.nombre || '—',
+        participantes: participantes.length
+      }
+      setEquipos(prev => [...prev, nuevo])
+      return {
+        equipo: nuevo,
+        habilitado,
+        mensaje: habilitado ? '' : `Se requieren al menos ${minimo} participantes.`
+      }
+    }
     const eq = await api.crearEquipo({ nombre, institucion_id: institucion_id || null, deporte_id })
     for (const p of participantes) {
       await api.agregarParticipante(eq.id, { nombre: p.nombre, posicion: p.posicion || null })
@@ -106,15 +152,64 @@ export function DataProvider ({ children }) {
   }
 
   const ejecutarSorteo = async (deporte_id) => {
+    if (modoDemo) {
+      const semilla = `demo-${Date.now().toString(36)}`
+      const res = demoSorteo(deporte_id, equipos, semilla)
+      setPartidos(prev => [...prev.filter(p => p.deporte_id !== deporte_id), ...res.partidos])
+      return { semilla: res.semilla, series: res.series }
+    }
     const res = await api.ejecutarSorteoRemoto({ eventoId, deporteId: deporte_id })
     await recargarPartidos()
     return res
   }
 
+  // Busca el nombre de un anotador entre los participantes de ambos equipos (modo demostración)
+  const nombreAnotador = (participanteId, partido) => {
+    const lista = [partido.localId, partido.visitaId].flatMap(eqId =>
+      participantesDemo.current[eqId] || demoParticipantes(eqId)
+    )
+    return lista.find(p => p.id === participanteId)?.nombre || 'Anotador'
+  }
+
   const registrarResultado = async (partidoId, payload) => {
+    if (modoDemo) {
+      setPartidos(prev => prev.map(p => p.id !== partidoId
+        ? p
+        : {
+            ...p,
+            golesLocal: payload.marcador_local,
+            golesVisitante: payload.marcador_visita,
+            publicado: !!payload.publicado,
+            estado: payload.publicado ? 'publicado' : p.estado,
+            goleadores: (payload.estadisticas || []).map(s => ({
+              jugador: nombreAnotador(s.participante_id, p), goles: s.goles
+            }))
+          }
+      ))
+      return
+    }
     await api.registrarResultadoRemoto(partidoId, payload)
     await recargarPartidos()
   }
+
+  // ----- Consultas que las vistas hacen bajo demanda -----
+  const getParticipantes = useCallback((equipoId) => (
+    modoDemo
+      ? Promise.resolve(participantesDemo.current[equipoId] || demoParticipantes(equipoId))
+      : api.getParticipantes(equipoId)
+  ), [modoDemo])
+
+  const getPosiciones = useCallback((deporteId) => (
+    modoDemo
+      ? Promise.resolve(demoPosiciones(deporteId, partidos, equipos))
+      : api.getPosiciones(deporteId)
+  ), [modoDemo, partidos, equipos])
+
+  const getRanking = useCallback((deporteId) => (
+    modoDemo
+      ? Promise.resolve(demoRanking(deporteId, partidos))
+      : api.getRanking(deporteId)
+  ), [modoDemo, partidos])
 
   // ----- Incidencias (en memoria) -----
   const agregarIncidencia = ({ tipo, descripcion, partido }) => {
@@ -140,15 +235,13 @@ export function DataProvider ({ children }) {
   }
 
   const value = {
-    deportes, instituciones, equipos, partidos, eventoId, cargando, error,
+    deportes, instituciones, equipos, partidos, eventoId, cargando, error, modoDemo,
     GRADOS, PAIS_POR_GRADO,
     DEPORTES: deportes, // alias para compatibilidad con las vistas
     recargar: cargarTodo,
     incidencias, agregarIncidencia, avanzarEstadoIncidencia,
     agregarInstitucion, inscribirEquipo, ejecutarSorteo, registrarResultado,
-    getParticipantes: api.getParticipantes,
-    getPosiciones: api.getPosiciones,
-    getRanking: api.getRanking
+    getParticipantes, getPosiciones, getRanking
   }
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>
