@@ -10,10 +10,11 @@ import TablaPosiciones from './pages/TablaPosiciones.jsx'
 import Incidencias from './pages/Incidencias.jsx'
 import Reportes from './pages/Reportes.jsx'
 import Diccionario from './pages/Diccionario.jsx'
+import Usuarios from './pages/Usuarios.jsx'
 
 // Vistas permitidas por rol (id de ruta)
 export const PERMISOS = {
-  admin: ['instituciones', 'equipos', 'sorteo', 'resultados', 'posiciones', 'incidencias', 'reportes', 'diccionario'],
+  admin: ['instituciones', 'equipos', 'sorteo', 'resultados', 'posiciones', 'incidencias', 'reportes', 'usuarios', 'diccionario'],
   coordinador: ['sorteo', 'resultados', 'incidencias', 'posiciones', 'diccionario'],
   arbitro: ['resultados', 'incidencias', 'diccionario'],
   institucion: ['instituciones', 'equipos', 'posiciones', 'diccionario']
@@ -27,6 +28,7 @@ export const VISTAS = [
   { id: 'posiciones', ruta: '/posiciones', titulo: 'Tabla y estadísticas', icono: '🏆' },
   { id: 'incidencias', ruta: '/incidencias', titulo: 'Incidencias', icono: '🚨' },
   { id: 'reportes', ruta: '/reportes', titulo: 'Reportes', icono: '📊' },
+  { id: 'usuarios', ruta: '/usuarios', titulo: 'Usuarios y accesos', icono: '👥' },
   { id: 'diccionario', ruta: '/diccionario', titulo: 'Acerca del sistema', icono: '📖' }
 ]
 
@@ -54,6 +56,7 @@ export default function App () {
       <Route path="/posiciones" element={<Privada vistaId="posiciones"><TablaPosiciones /></Privada>} />
       <Route path="/incidencias" element={<Privada vistaId="incidencias"><Incidencias /></Privada>} />
       <Route path="/reportes" element={<Privada vistaId="reportes"><Reportes /></Privada>} />
+      <Route path="/usuarios" element={<Privada vistaId="usuarios"><Usuarios /></Privada>} />
       <Route path="/diccionario" element={<Privada vistaId="diccionario"><Diccionario /></Privada>} />
       <Route path="*" element={<Navigate to={inicio} replace />} />
     </Routes>

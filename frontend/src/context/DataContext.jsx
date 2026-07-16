@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
-import { GRADOS, PAIS_POR_GRADO, incidencias as incidenciasSeed, ESTADOS_INCIDENCIA } from '../data/seed.js'
+import { GRADOS, PAIS_POR_GRADO, incidencias as incidenciasSeed, ESTADOS_INCIDENCIA, usuarios as usuariosSeed } from '../data/seed.js'
 import {
   demoDeportes, demoInstituciones, demoEquipos, demoPartidos,
   demoParticipantes, demoPosiciones, demoRanking, demoSorteo
@@ -55,6 +55,8 @@ export function DataProvider ({ children }) {
   const participantesDemo = useRef({})
   // Incidencias: se mantienen solo en memoria (sin backend)
   const [incidencias, setIncidencias] = useState(incidenciasSeed)
+  // Cuentas de acceso (se administran desde la pantalla "Usuarios y accesos")
+  const [usuarios, setUsuarios] = useState([])
 
   const recargarEquipos = useCallback(async () => {
     setEquipos((await api.getEquipos()).map(mapEquipo))
@@ -211,6 +213,66 @@ export function DataProvider ({ children }) {
       : api.getRanking(deporteId)
   ), [modoDemo, partidos])
 
+  // ----- Cuentas y roles (microservicio de registro :4002) -----
+  // En modo demostración se trabaja sobre una copia en memoria del seed
+  // (sin exponer contraseñas); los cambios duran solo la sesión.
+  const cargarUsuarios = useCallback(async () => {
+    if (modoDemo) {
+      setUsuarios(usuariosSeed.map(({ id, nombre, email, rol }) => ({ id, nombre, email, rol })))
+      return
+    }
+    setUsuarios(await api.getUsuariosRemoto())
+  }, [modoDemo])
+
+  const crearUsuario = async ({ nombre, email, password, rol }) => {
+    if (modoDemo) {
+      if (usuarios.some(u => u.email.toLowerCase() === email.trim().toLowerCase())) {
+        throw new Error('El correo ya está registrado.')
+      }
+      const nuevo = { id: Date.now(), nombre: nombre.trim(), email: email.trim(), rol }
+      setUsuarios(prev => [...prev, nuevo])
+      return nuevo
+    }
+    const creado = await api.crearUsuarioRemoto({ nombre, email, password, rol })
+    await cargarUsuarios()
+    return creado
+  }
+
+  const cambiarRol = async (id, rol) => {
+    if (modoDemo) {
+      setUsuarios(prev => prev.map(u => (u.id === id ? { ...u, rol } : u)))
+      return
+    }
+    await api.cambiarRolRemoto(id, rol)
+    await cargarUsuarios()
+  }
+
+  // Actualiza nombre/correo/contraseña. La contraseña solo se envía si se cambió.
+  const actualizarUsuario = async (id, { nombre, email, password }) => {
+    if (modoDemo) {
+      if (email && usuarios.some(u => u.id !== id && u.email.toLowerCase() === email.trim().toLowerCase())) {
+        throw new Error('El correo ya está registrado por otra cuenta.')
+      }
+      setUsuarios(prev => prev.map(u => (u.id === id
+        ? { ...u, nombre: nombre?.trim() || u.nombre, email: email?.trim() || u.email }
+        : u)))
+      return
+    }
+    const payload = { nombre, email }
+    if (password) payload.password = password
+    await api.actualizarUsuarioRemoto(id, payload)
+    await cargarUsuarios()
+  }
+
+  const eliminarUsuario = async (id) => {
+    if (modoDemo) {
+      setUsuarios(prev => prev.filter(u => u.id !== id))
+      return
+    }
+    await api.eliminarUsuarioRemoto(id)
+    await cargarUsuarios()
+  }
+
   // ----- Incidencias (en memoria) -----
   const agregarIncidencia = ({ tipo, descripcion, partido }) => {
     setIncidencias(prev => [
@@ -241,7 +303,8 @@ export function DataProvider ({ children }) {
     recargar: cargarTodo,
     incidencias, agregarIncidencia, avanzarEstadoIncidencia,
     agregarInstitucion, inscribirEquipo, ejecutarSorteo, registrarResultado,
-    getParticipantes, getPosiciones, getRanking
+    getParticipantes, getPosiciones, getRanking,
+    usuarios, cargarUsuarios, crearUsuario, cambiarRol, actualizarUsuario, eliminarUsuario
   }
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>

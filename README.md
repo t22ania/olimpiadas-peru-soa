@@ -126,20 +126,46 @@ En sistemas Windows, una vez instaladas las dependencias en cada carpeta, puede 
 el archivo `iniciar-todo.bat` para levantar los cuatro servicios de una sola vez. La
 base de datos debe estar en ejecución antes de usarlo.
 
-## 5. Usuarios de prueba
+## 5. Usuarios de acceso
 
-La aplicación incluye cuatro cuentas, una por cada rol. La contraseña para todas es `123456`.
+El sistema se entrega con cuatro cuentas iniciales de demostración, una por cada rol.
+La contraseña inicial para todas es `123456`.
 
 | Rol | Correo | Alcance |
 |---|---|---|
-| Administrador | admin@demo.com | Acceso a todas las vistas, incluida la de reportes |
+| Administrador | admin@demo.com | Acceso a todas las vistas, incluidas reportes y gestión de usuarios |
 | Coordinador | coordinador@demo.com | Sorteo, resultados, incidencias y tabla de posiciones |
 | Árbitro | arbitro@demo.com | Registro de resultados e incidencias |
 | Institución | institucion@demo.com | Registro, inscripción de equipos y tabla de posiciones |
 
+> **Importante (seguridad):** estas son credenciales de demostración públicas y
+> son **idénticas en cualquier equipo** donde se instale el proyecto, porque se
+> cargan desde el archivo de datos iniciales `sistema-web-completo/seeds/01_inicial.js`.
+> En un entorno real deben cambiarse tras la primera instalación (ver punto 5.1).
+
 Cada rol visualiza únicamente el menú correspondiente a sus permisos. Si un usuario
 intenta ingresar a una vista que no le corresponde, el sistema lo redirige de forma
 automática a una de sus vistas permitidas.
+
+### 5.1. Gestión de cuentas y roles
+
+El administrador dispone de la pantalla **«Usuarios y accesos»** (menú lateral,
+solo visible para el rol administrador), desde la cual puede, sin tocar código:
+
+- **Crear** nuevas cuentas indicando nombre, correo, contraseña y rol.
+- **Cambiar el rol** de acceso de cualquier cuenta.
+- **Editar** el correo y **restablecer la contraseña** de una cuenta existente.
+- **Eliminar** cuentas.
+
+Las contraseñas se almacenan cifradas con `bcrypt`; el sistema nunca guarda ni
+devuelve la contraseña en texto plano. Como medida de seguridad, no se permite
+quitar el rol ni eliminar la cuenta del **único** administrador, para evitar dejar
+el sistema sin acceso de administración.
+
+Esta pantalla es la vía recomendada para dejar de usar las credenciales de
+demostración: al instalar el proyecto, ingresar como administrador y actualizar los
+correos y contraseñas de cada cuenta (o crear las cuentas reales y eliminar las de
+ejemplo). Los cambios se guardan en la base de datos del equipo donde se ejecuta.
 
 ## 6. Funcionalidades principales
 

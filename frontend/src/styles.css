@@ -31,6 +31,9 @@ button { font-family: inherit; cursor: pointer; border: none; border-radius: 8px
 .btn-secundario:disabled { opacity: .5; cursor: not-allowed; }
 .btn-full { width: 100%; margin-top: .5rem; }
 .btn-quitar { background: #fee2e2; color: #b91c1c; padding: .3rem .6rem; font-size: .8rem; }
+.btn-mini { padding: .3rem .6rem; font-size: .8rem; }
+.form-acciones { display: flex; gap: .5rem; margin-top: .5rem; }
+.acciones-fila { display: flex; gap: .4rem; }
 .btn-salir { background: rgba(255,255,255,.15); color: #fff; padding: .45rem .9rem; font-weight: 600; }
 .btn-salir:hover { background: rgba(255,255,255,.3); }
 
@@ -48,14 +51,7 @@ button { font-family: inherit; cursor: pointer; border: none; border-radius: 8px
 .login-form label { font-weight: 600; font-size: .85rem; margin-top: .5rem; }
 .login-form input { padding: .65rem; border: 1px solid var(--borde); border-radius: 8px; font-size: 1rem; }
 .login-error { background: #fee2e2; color: #b91c1c; padding: .6rem; border-radius: 8px; font-size: .85rem; margin-top: .6rem; }
-.login-ayuda { margin-top: 1.4rem; border-top: 1px dashed var(--borde); padding-top: 1rem; }
-.ayuda-titulo { font-size: .82rem; color: var(--muted); margin: 0 0 .6rem; }
-.ayuda-titulo code { background: #f3f4f6; padding: 1px 5px; border-radius: 4px; }
-.ayuda-cuentas { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
-.cuenta-chip { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; background: #f9fafb; border: 1px solid var(--borde); padding: .5rem .6rem; border-radius: 8px; text-align: left; }
-.cuenta-chip:hover { border-color: var(--primario); background: #fff5f6; }
-.cuenta-chip strong { font-size: .82rem; }
-.cuenta-chip span { font-size: .72rem; color: var(--muted); }
+.login-nota { margin-top: 1.4rem; border-top: 1px dashed var(--borde); padding-top: 1rem; font-size: .8rem; color: var(--muted); text-align: center; }
 
 /* ===== Shell ===== */
 .app-shell { display: flex; min-height: 100vh; }

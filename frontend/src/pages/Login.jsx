@@ -3,13 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import { PERMISOS } from '../App.jsx'
 
-const CUENTAS = [
-  { email: 'admin@demo.com', rol: 'Administrador' },
-  { email: 'coordinador@demo.com', rol: 'Coordinador' },
-  { email: 'arbitro@demo.com', rol: 'Árbitro' },
-  { email: 'institucion@demo.com', rol: 'Institución' }
-]
-
 export default function Login () {
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -27,12 +20,6 @@ export default function Login () {
     if (!res.ok) { setError(res.error); return }
     const inicio = (PERMISOS[res.usuario.rol] || ['posiciones'])[0]
     navigate(`/${inicio}`, { replace: true })
-  }
-
-  const usarCuenta = (correo) => {
-    setEmail(correo)
-    setPassword('123456')
-    setError('')
   }
 
   return (
@@ -69,17 +56,7 @@ export default function Login () {
           </button>
         </form>
 
-        <div className="login-ayuda">
-          <p className="ayuda-titulo">Cuentas de prueba (contraseña: <code>123456</code>)</p>
-          <div className="ayuda-cuentas">
-            {CUENTAS.map(c => (
-              <button key={c.email} className="cuenta-chip" onClick={() => usarCuenta(c.email)} type="button">
-                <strong>{c.rol}</strong>
-                <span>{c.email}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+        <p className="login-nota">Acceso restringido. Solicita tus credenciales al administrador del sistema.</p>
       </div>
     </div>
   )

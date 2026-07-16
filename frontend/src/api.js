@@ -36,6 +36,18 @@ export const loginRemoto = (email, password) =>
 export const registrarInstitucionRemoto = (payload) =>
   request(`${REGISTRO_URL}/instituciones`, { method: 'POST', body: payload, timeout: 4000 })
 
+// ---- Gestión de cuentas y roles (servicio-registro :4002) ----
+export const getUsuariosRemoto = () =>
+  request(`${REGISTRO_URL}/usuarios`, { timeout: 4000 })
+export const crearUsuarioRemoto = (payload) =>
+  request(`${REGISTRO_URL}/usuarios`, { method: 'POST', body: payload, timeout: 4000 })
+export const cambiarRolRemoto = (id, rol) =>
+  request(`${REGISTRO_URL}/usuarios/${id}/rol`, { method: 'PATCH', body: { rol }, timeout: 4000 })
+export const actualizarUsuarioRemoto = (id, payload) =>
+  request(`${REGISTRO_URL}/usuarios/${id}`, { method: 'PATCH', body: payload, timeout: 4000 })
+export const eliminarUsuarioRemoto = (id) =>
+  request(`${REGISTRO_URL}/usuarios/${id}`, { method: 'DELETE', timeout: 4000 })
+
 // ---- Sistema web completo (:4000) ----
 export const getDeportes = () => request(`${API_URL}/api/deportes`)
 export const getInstituciones = () => request(`${API_URL}/api/instituciones`)
