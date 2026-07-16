@@ -10,7 +10,8 @@
     "migrate": "knex migrate:latest",
     "rollback": "knex migrate:rollback --all",
     "seed": "knex seed:run",
-    "db:reset": "knex migrate:rollback --all && knex migrate:latest && knex seed:run"
+    "db:reset": "knex migrate:rollback --all && knex migrate:latest && knex seed:run",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -19,5 +20,10 @@
     "express": "^4.21.0",
     "knex": "^3.1.0",
     "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "jest": "^30.4.2",
+    "supertest": "^7.2.2"
   }
 }
