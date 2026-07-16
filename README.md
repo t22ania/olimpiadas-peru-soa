@@ -167,6 +167,43 @@ demostración: al instalar el proyecto, ingresar como administrador y actualizar
 correos y contraseñas de cada cuenta (o crear las cuentas reales y eliminar las de
 ejemplo). Los cambios se guardan en la base de datos del equipo donde se ejecuta.
 
+### 5.2. ¿Dónde se guardan los cambios de cuentas? (GitHub vs. base de datos)
+
+Es importante distinguir dos lugares de almacenamiento distintos:
+
+| Almacena | GitHub (este repositorio) | Base de datos PostgreSQL |
+|---|---|---|
+| Qué guarda | El **código fuente** y el archivo semilla con las cuentas de ejemplo (contraseña `123456`) | Las cuentas **reales** y todos sus cambios: nuevos usuarios, correos y contraseñas |
+| Dónde vive | En la nube, es público | En el equipo o servidor que ejecuta los servicios |
+
+Cuando el administrador crea una cuenta o cambia una contraseña desde la pantalla
+"Usuarios y accesos", ese cambio **se guarda en la base de datos, no en GitHub**. Por
+diseño, las contraseñas reales **nunca** se suben al repositorio: sería una mala
+práctica de seguridad. En consecuencia, si otra persona clona o descarga este
+repositorio, obtiene el código y las cuentas de ejemplo con `123456`, pero **no** las
+contraseñas que se hayan modificado en una instalación concreta.
+
+### 5.3. Adaptación a un entorno de empresa (producción)
+
+En un uso real no se distribuye la aplicación para que cada persona la descargue.
+Se despliega **una sola instancia** en un servidor o en la nube, y su base de datos
+conserva las cuentas de forma permanente. El procedimiento recomendado es:
+
+1. Desplegar la aplicación junto con una base de datos PostgreSQL en un servidor o
+   servicio en la nube (no en el equipo de cada usuario).
+2. Crear las tablas y cargar **únicamente un administrador inicial**, en lugar de las
+   cuatro cuentas de demostración.
+3. Ese administrador ingresa y crea las cuentas reales o cambia las contraseñas desde
+   la pantalla "Usuarios y accesos"; los datos quedan almacenados en la base de datos
+   de producción.
+4. Los usuarios acceden a la aplicación mediante su **dirección web**; no descargan
+   ningún archivo.
+5. La persistencia y el resguardo de las cuentas se garantizan mediante **copias de
+   seguridad de la base de datos**, no a través de GitHub.
+6. Los datos sensibles (por ejemplo, la clave `JWT_SECRET` de los tokens) se
+   configuran en **variables de entorno** (`.env`) y nunca se incluyen en el
+   repositorio.
+
 ## 6. Funcionalidades principales
 
 - Registro de instituciones, con asignación automática del país representado según el grado.
