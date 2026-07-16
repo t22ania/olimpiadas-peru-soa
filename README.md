@@ -12,6 +12,8 @@ básquet, vóley y ping pong.
 |---|---|
 | Aplicación publicada | https://t22ania.github.io/olimpiadas-peru-soa/ |
 | Código fuente | https://github.com/t22ania/olimpiadas-peru-soa |
+| Informe final | https://utpedupe-my.sharepoint.com/:b:/g/personal/u21301735_utp_edu_pe/IQAPQ3BKSrrWQKyKP0aQi5x7AZfhWrUw55hTBGtn9UJNosQ?e=yOMeV1 |
+| Presentación final (PPT) | https://utpedupe-my.sharepoint.com/:b:/g/personal/u21301735_utp_edu_pe/IQABdHU4VpciQJr9zFjeOB8OAegCZpRb995xIZtxCWELN_4?e=K4qvIH |
 
 La aplicación publicada funciona en modo demostración: como GitHub Pages solo
 admite sitios estáticos, el frontend se ejecuta con los datos de ejemplo cargados
